@@ -273,6 +273,3 @@ To be announced
 
 ---
 
-## 📝 License
-
-Specify your preferred license (MIT, GPL, etc.) in `LICENSE`.
