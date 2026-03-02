@@ -94,6 +94,87 @@ R1 = Q_ct  * Ts * eye(4)
 
 ---
 
+
+# 🔁 Optimization Strategy and Data Usage
+
+## 🔹 Optimization on Short Calibration Segments
+
+Hyperparameter optimization does **not** require the full dataset.
+
+The Genetic Algorithm (GA) can be run on:
+
+- A small subset of trials  
+- A short calibration segment (e.g., first 30–60 seconds)  
+- A representative continuous data block  
+
+This significantly reduces computational load while still providing stable parameter estimates.
+
+After optimal parameters are found, they can be applied to the **full dataset** for tracking.
+
+---
+
+## 🔹 Trial-Based vs Continuous Data
+
+The optimization input `ytr` is expected to have shape:
+
+```
+[M x T x nTrials]
+```
+
+where:
+- `M` = channels
+- `T` = time samples
+- `nTrials` = number of trials
+
+However, the tracking input `sig_in` (used in `run_EKFOT`) can be provided as:
+
+```
+[M x T]
+```
+
+and may represent either:
+
+- Epoched trial data (concatenated or individual trials)
+- Fully continuous recordings
+
+---
+
+## ⭐ Recommended Practice
+
+While both formats are supported, it is **preferable that `sig_in` is provided as continuous data** when possible.
+
+Continuous data:
+
+- Avoids repeated EKF re-initialization across trials  
+- Produces smoother frequency trajectories  
+- Improves stability of damping estimates  
+- Better captures slow adaptation or learning effects  
+- Is more suitable for online and real-time BCI applications  
+
+The training data `ytr` used during hyperparameter optimization can, however, be structured as trials.  
+Using epoched trial data for optimization can be beneficial when the goal is to make the algorithm focus specifically on task-related dynamics (e.g., motor imagery periods, cue-locked activity, or event-related oscillatory changes).
+
+A practical strategy is therefore:
+
+1. Use task-relevant trials (`ytr`) to optimize EKF hyperparameters.
+2. Apply the optimized parameters to continuous data (`sig_in`) for stable and physiologically meaningful tracking.
+
+This separation between optimization and full-data tracking allows both computational efficiency and improved sensitivity to relevant neural dynamics.
+
+---
+
+## 🔬 Practical Workflow Example
+
+1. Select a short continuous segment (e.g., first 60 seconds)
+2. Run GA optimization on that segment
+3. Apply the optimized parameters to the full continuous recording
+4. Analyze frequency drift, amplitude changes, and uncertainty
+
+This two-step approach balances computational efficiency and estimation accuracy.
+
+---
+
+
 ## 🎯 Cost Function
 
 The optimization minimizes normalized innovation energy:
@@ -122,7 +203,10 @@ ignore = 200;      % discard transient samples
 Expected shape:
 
 ```
-ytr : [M x T x nTrials]
+ytr : [M x T x nTrials]    or    [M x T] 
+  M:       channels
+  T:       time points
+  nTrias:  number of trials
 ```
 
 ---
