@@ -1,7 +1,7 @@
 function [J, Up] = EKFOT(X, Y, ignore, Fs)
-%EKFOT_CLEAN  EKF oscillator tracking cost for GA optimization.
+%EKFOT  EKF oscillator tracking cost for GA optimization.
 %
-%   [J, Up] = EKFOT_clean(X, Y, ignore, Fs)
+%   [J, Up] = EKFOT(X, Y, ignore, Fs)
 %
 % Inputs
 %   X      : parameter vector [R2_ct, Q_ct, omega0, alpha0, P0scale]
